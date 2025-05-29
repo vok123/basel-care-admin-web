@@ -75,6 +75,10 @@ function Chat() {
   };
 
   const loopConsultation = useCallback(() => {
+    if (!getToken()) {
+      clearTimeout(timer.current!);
+      return;
+    }
     postDoctorGetConsultationPage({
       pageNo: 1,
       pageSize: 200,
@@ -88,7 +92,7 @@ function Chat() {
           loopConsultation();
         }, 3000);
       });
-  }, []);
+  }, [getToken]);
 
   useEffect(() => {
     loopConsultation();
@@ -99,12 +103,7 @@ function Chat() {
 
   const loopNewMessage = useCallback(() => {
     if (!getToken()) {
-      clearTimeout(timer.current!);
       clearTimeout(messageTimerRef.current!);
-      setListLoading(false);
-      setMsgLoading(false);
-      setList([]);
-      setCurConsultation(undefined);
       return;
     }
     if (cid) {
@@ -125,7 +124,6 @@ function Chat() {
   }, [cid, getToken]);
 
   useEffect(() => {
-    setMsgLoading(true);
     loopNewMessage();
   }, [loopNewMessage]);
 

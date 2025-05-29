@@ -128,9 +128,9 @@ function Login() {
   };
 
   /** 点击忘记密码 */
-  const onForgetPassword = () => {
-    navigate(`/forget${search}`);
-  };
+  // const onForgetPassword = () => {
+  //   navigate(`/forget${search}`);
+  // };
 
   const onRegister = () => {
     navigate(`/register${search}`);
@@ -248,25 +248,23 @@ function Login() {
               {t("login.login")}
             </Button>
           </Form>
+          <div className="flex justify-center items-center mb-3 px-1px">
+            <Checkbox checked={isRemember} onChange={onRemember}>
+              {t("login.rememberMe")}
+            </Checkbox>
 
+            {/* <div
+              className="text-blue-500 cursor-pointer"
+              onClick={onForgetPassword}
+            >
+              {t("login.forgetPassword")}
+            </div> */}
+          </div>
           <div
             className="text-blue-500 cursor-pointer text-center mb-4"
             onClick={onRegister}
           >
             {t("login.registerNew")}
-          </div>
-
-          <div className="flex justify-between items-center mb-5px px-1px">
-            <Checkbox checked={isRemember} onChange={onRemember}>
-              {t("login.rememberMe")}
-            </Checkbox>
-
-            <div
-              className="text-blue-500 cursor-pointer"
-              onClick={onForgetPassword}
-            >
-              {t("login.forgetPassword")}
-            </div>
           </div>
         </div>
       </div>

@@ -16,7 +16,6 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   LogoutOutlined,
-  FormOutlined,
   ExclamationCircleOutlined
 } from '@ant-design/icons';
 import Avatar from '@/assets/images/avatar.png';
@@ -50,11 +49,11 @@ function Header() {
 
   // 下拉菜单内容
   const items: MenuProps['items'] = [
-    {
-      key: 'password',
-      label: (<span>{ t('public.changePassword') }</span>),
-      icon: <FormOutlined className="mr-1" />,
-    },
+    // {
+    //   key: 'password',
+    //   label: (<span>{ t('public.changePassword') }</span>),
+    //   icon: <FormOutlined className="mr-1" />,
+    // },
     {
       key: 'logout',
       label: (<span>{ t('public.signOut') }</span>),
