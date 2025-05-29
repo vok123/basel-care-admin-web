@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
   const { VITE_SERVER_PORT, VITE_PROXY } = viteEnv;
 
   return {
+    base: mode === 'production' ? '/admin/' : '/',
     plugins: createVitePlugins(),
     resolve: {
       alias: {

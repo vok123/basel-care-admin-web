@@ -1,21 +1,26 @@
-import type { MenuProps } from 'antd';
-import type { SideMenu } from '#/public';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Menu } from 'antd';
-import { Icon } from '@iconify/react';
-import { useTranslation } from 'react-i18next';
-import { useCommonStore } from '@/hooks/useCommonStore';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useMenuStore } from '@/stores';
+import type { SideMenu } from "#/public";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  startTransition,
+} from "react";
+import { Menu } from "antd";
+import { Icon } from "@iconify/react";
+import { useTranslation } from "react-i18next";
+import { useCommonStore } from "@/hooks/useCommonStore";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useMenuStore } from "@/stores";
 import {
   filterMenus,
   getFirstMenu,
   getOpenMenuByRouter,
   handleFilterMenus,
-  splitPath
-} from '@/menus/utils/helper';
-import styles from '../index.module.less';
-import Logo from '@/assets/images/logo.svg';
+  splitPath,
+} from "@/menus/utils/helper";
+import styles from "../index.module.less";
+import Logo from "@/assets/images/logo.svg";
 
 interface Props {
   changeContentVisible: (state: boolean) => void;
@@ -24,7 +29,7 @@ interface Props {
 function LayoutMenu(props: Props) {
   const { changeContentVisible } = props;
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { pathname } = useLocation();
   const [menus, setMenus] = useState<SideMenu[]>([]);
   // 获取当前语言
@@ -37,11 +42,16 @@ function LayoutMenu(props: Props) {
     openKeys,
     selectedKeys,
     permissions,
-    menuList
+    menuList,
   } = useCommonStore();
-  const { toggleCollapsed } = useMenuStore(state => state);
+  const { toggleCollapsed } = useMenuStore((state) => state);
   const [currentOpenKeys, setCurrentOpenKeys] = useState(openKeys || []);
-  const [currentSelectedKeys, setCurrentSelectedKeys] = useState(selectedKeys ? [selectedKeys] : []);
+  const [currentSelectedKeys, setCurrentSelectedKeys] = useState(
+    selectedKeys ? [selectedKeys] : [],
+  ); /** 隐藏菜单 */
+  const hiddenMenu = useCallback(() => {
+    toggleCollapsed(true);
+  }, [toggleCollapsed]);
 
   // 处理默认展开
   useEffect(() => {
@@ -57,9 +67,7 @@ function LayoutMenu(props: Props) {
   const filterMenuIcon = useCallback((menus: SideMenu[]) => {
     for (let i = 0; i < menus.length; i++) {
       if (menus[i]?.icon) {
-        menus[i].icon = (
-          <Icon icon={menus[i].icon as string} />
-        );
+        menus[i].icon = <Icon icon={menus[i].icon as string} />;
       }
 
       if (menus[i]?.children?.length) {
@@ -81,39 +89,45 @@ function LayoutMenu(props: Props) {
    * 处理跳转
    * @param path - 路径
    */
-  const goPath = (path: string) => {
-    navigate(path);
-  };
+  const goPath = useCallback(
+    (path: string) => {
+      navigate(path);
+    },
+    [navigate],
+  );
 
   /**
    * 点击菜单
    * @param e - 菜单事件
    */
-  const onClickMenu: MenuProps['onClick'] = e => {
-    // 如果点击的菜单是当前菜单则退出
-    if (e.key === pathname) return;
+  const onClickMenu = useCallback(
+    (e: any) => {
+      // 如果点击的菜单是当前菜单则退出
+      if (e.key === pathname) return;
 
-    changeContentVisible(false);
-    setCurrentSelectedKeys([e.key]);
-    if (isPhone) hiddenMenu();
+      changeContentVisible(false);
+      setCurrentSelectedKeys([e.key]);
+      if (isPhone) hiddenMenu();
 
-    // 如果是生产环境和测试环境则直接跳转
-    if (['production', 'test'].includes(String(process.env.NODE_ENV))) {
-      goPath(e.key);
-      changeContentVisible(true);
-      return;
-    }
-
-    startTransition(() => {
-      setTimeout(() => {
+      // 如果是生产环境和测试环境则直接跳转
+      if (["production", "test"].includes(String(process.env.NODE_ENV))) {
         goPath(e.key);
-      }, 300);
-
-      setTimeout(() => {
         changeContentVisible(true);
-      }, 500);
-    });
-  };
+        return;
+      }
+
+      startTransition(() => {
+        setTimeout(() => {
+          goPath(e.key);
+        }, 300);
+
+        setTimeout(() => {
+          changeContentVisible(true);
+        }, 500);
+      });
+    },
+    [changeContentVisible, goPath, hiddenMenu, isPhone, pathname],
+  );
 
   /**
    * 对比当前展开目录是否是同一层级
@@ -137,105 +151,105 @@ function LayoutMenu(props: Props) {
    * 展开/关闭回调
    * @param openKeys - 展开键值
    */
-  const onOpenChange = (openKeys: string[]) => {
-    startTransition(() => {
-      const newOpenKey: string[] = [];
-      let last = ''; // 最后一个目录结构
+  const onOpenChange = useCallback(
+    (openKeys: string[]) => {
+      startTransition(() => {
+        const newOpenKey: string[] = [];
+        let last = ""; // 最后一个目录结构
 
-      // 当目录有展开值
-      if (openKeys.length > 0) {
-        last = openKeys[openKeys.length - 1];
-        const lastArr: string[] = splitPath(last);
-        newOpenKey.push(last);
+        // 当目录有展开值
+        if (openKeys.length > 0) {
+          last = openKeys[openKeys.length - 1];
+          const lastArr: string[] = splitPath(last);
+          newOpenKey.push(last);
 
-        // 对比当前展开目录是否是同一层级
-        for (let i = openKeys.length - 2; i >= 0; i--) {
-          const arr = splitPath(openKeys[i]);
-          const hasOpenKey = diffOpenMenu(arr, lastArr);
-          if (hasOpenKey) newOpenKey.unshift(openKeys[i]);
+          // 对比当前展开目录是否是同一层级
+          for (let i = openKeys.length - 2; i >= 0; i--) {
+            const arr = splitPath(openKeys[i]);
+            const hasOpenKey = diffOpenMenu(arr, lastArr);
+            if (hasOpenKey) newOpenKey.unshift(openKeys[i]);
+          }
         }
-      }
 
-      setCurrentOpenKeys(newOpenKey);
-    });
-  };
+        setCurrentOpenKeys(newOpenKey);
+      });
+    },
+    [setCurrentOpenKeys],
+  );
 
   /** 点击logo */
-  const onClickLogo = () => {
+  const onClickLogo = useCallback(() => {
     const firstMenu = getFirstMenu(menus, permissions);
     goPath(firstMenu);
     if (isPhone) hiddenMenu();
-  };
+  }, [menus, permissions, isPhone, goPath, hiddenMenu]);
 
-  /** 隐藏菜单 */
-  const hiddenMenu = () => {
-    toggleCollapsed(true);
-  };
-
-  return useMemo(() => (
-    <>
-      <div
-        className={`
+  return useMemo(
+    () => (
+      <>
+        <div
+          className={`
           transition-all
           overflow-auto
           z-2
           ${styles.menu}
-          ${isCollapsed ? styles['menu-close'] : ''}
-          ${isMaximize || (isPhone && isCollapsed) ? styles['menu-none'] : ''}
-          ${isPhone ? '!z-1002' : ''}
+          ${isCollapsed ? styles["menu-close"] : ""}
+          ${isMaximize || (isPhone && isCollapsed) ? styles["menu-none"] : ""}
+          ${isPhone ? "!z-1002" : ""}
         `}
-      >
-        <div
-          className={`
+        >
+          <div
+            className={`
             text-white
             flex
             content-center
             px-5
             py-2
             cursor-pointer
-            ${isCollapsed ? 'justify-center' : ''}
+            ${isCollapsed ? "justify-center" : ""}
           `}
-          onClick={onClickLogo}
-        >
-          <img
-            src={Logo}
-            width={30}
-            height={30}
-            className="object-contain"
-            alt="logo"
-          />
+            onClick={onClickLogo}
+          >
+            <img
+              src={Logo}
+              width={30}
+              height={30}
+              className="object-contain"
+              alt="logo"
+            />
 
-          <span className={`
+            <span
+              className={`
             text-white
             ml-3
             text-xl
             font-bold
             truncate
-            ${isCollapsed ? 'hidden' : ''}
-          `}>
-            BaselCare
-          </span>
+            ${isCollapsed ? "hidden" : ""}
+          `}
+            >
+              BaselCare
+            </span>
+          </div>
+
+          <Menu
+            id="layout-menu"
+            className="z-1000"
+            selectedKeys={currentSelectedKeys}
+            openKeys={currentOpenKeys}
+            mode="inline"
+            theme="dark"
+            forceSubMenuRender
+            inlineCollapsed={isPhone ? false : isCollapsed}
+            items={handleFilterMenus(menus)}
+            onClick={onClickMenu}
+            onOpenChange={onOpenChange}
+          />
         </div>
 
-        <Menu
-          id="layout-menu"
-          className="z-1000"
-          selectedKeys={currentSelectedKeys}
-          openKeys={currentOpenKeys}
-          mode="inline"
-          theme="dark"
-          forceSubMenuRender
-          inlineCollapsed={isPhone ? false : isCollapsed}
-          items={handleFilterMenus(menus)}
-          onClick={onClickMenu}
-          onOpenChange={onOpenChange}
-        />
-      </div>
-
-      {
-        isPhone && !isCollapsed &&
-        <div
-          className={`
+        {isPhone && !isCollapsed && (
+          <div
+            className={`
             ${styles.cover}
             fixed
             w-full
@@ -244,19 +258,24 @@ function LayoutMenu(props: Props) {
             bg-opacity-10
             z-1001
           `}
-          onClick={hiddenMenu}
-        />
-      }
-    </>
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [
-    currentOpenKeys,
-    currentSelectedKeys,
-    isCollapsed,
-    isMaximize,
-    isPhone,
-    menus,
-  ]);
+            onClick={hiddenMenu}
+          />
+        )}
+      </>
+    ),
+    [
+      currentOpenKeys,
+      currentSelectedKeys,
+      hiddenMenu,
+      isCollapsed,
+      isMaximize,
+      isPhone,
+      menus,
+      onClickLogo,
+      onClickMenu,
+      onOpenChange,
+    ],
+  );
 }
 
 export default LayoutMenu;

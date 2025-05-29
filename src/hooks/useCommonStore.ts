@@ -16,7 +16,7 @@ export const useCommonStore = () => {
   // 用户名
   const username = useUserStore((state) => {
     if (state.userInfo) {
-      return state.userInfo.firstName! + state.userInfo.lastName;
+      return state.userInfo.lastName + state.userInfo.firstName!;
     }
 
     return "-";

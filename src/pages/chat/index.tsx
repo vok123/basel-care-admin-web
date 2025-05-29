@@ -10,6 +10,7 @@ import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import "./index.less";
 import { MessageItem } from "@/components/complex/MessageItem";
+import { useToken } from "@/hooks/useToken";
 
 type ConsultationItem =
   Required<IPostDoctorGetConsultationPageRes>["list"][number];
@@ -28,6 +29,7 @@ function Chat() {
   const scrollViewRef = useRef<HTMLDivElement>(null);
   const messageTimerRef = useRef<NodeJS.Timeout | null>(null);
   const timer = useRef<NodeJS.Timeout | null>(null);
+  const [getToken] = useToken();
 
   const msgList = useMemo(() => {
     return curConsultation?.messages || [];
@@ -96,6 +98,15 @@ function Chat() {
   }, [timer, loopConsultation]);
 
   const loopNewMessage = useCallback(() => {
+    if (!getToken()) {
+      clearTimeout(timer.current!);
+      clearTimeout(messageTimerRef.current!);
+      setListLoading(false);
+      setMsgLoading(false);
+      setList([]);
+      setCurConsultation(undefined);
+      return;
+    }
     if (cid) {
       postDoctorGetConsultation({
         consultationId: cid,
@@ -111,7 +122,7 @@ function Chat() {
           }, 1500);
         });
     }
-  }, [cid]);
+  }, [cid, getToken]);
 
   useEffect(() => {
     setMsgLoading(true);
@@ -125,7 +136,7 @@ function Chat() {
   return (
     <div className="flex m-3" style={{ height: "calc(100% - 24px)" }}>
       <div
-        style={{ width: cid ? "250px" : "100%" }}
+        style={{ width: "250px" }}
         className="slider bg h-full  flex flex-col gap-3 rounded-[8px]"
       >
         <div className="slider-header pt-3 flex flex-col gap-2 px-4">
@@ -133,7 +144,7 @@ function Chat() {
           <Input placeholder="Search ..." />
         </div>
 
-        <div className="slider-content flex flex-col gap-2 flex-1 overflow-y-auto">
+        <div className="slider-content  flex flex-col gap-2 flex-1 overflow-y-auto">
           {listLoading ? (
             <div className="c-gray-4 text-center">Loading...</div>
           ) : !list?.length ? (

@@ -5,6 +5,7 @@ import { setTitle } from "@/utils/helper";
 import Logo from "@/assets/images/logo.svg";
 import { SendCodeWrapper } from "@/components/complex/SendCode";
 import { IPostDoctorRegisterReq, postDoctorRegister } from "@/api";
+import { encryptMd5 } from "@south/utils";
 
 function Register() {
   const { t, i18n } = useTranslation();
@@ -31,6 +32,7 @@ function Register() {
       setLoading(true);
       const params: IPostDoctorRegisterReq = {
         ...values,
+        password: encryptMd5(values.password!),
         username: values.email,
         phone: "+6512345678",
       };

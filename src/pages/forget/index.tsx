@@ -5,6 +5,7 @@ import { setTitle } from '@/utils/helper';
 import { message as globalMessage } from '@south/message';
 import { forgetPassword } from '@/servers/login';
 import Logo from '@/assets/images/logo.svg';
+import { encryptMd5 } from '@south/utils';
 
 interface ForgetData {
   username: string;
@@ -68,7 +69,10 @@ function Forget() {
 
     try {
       setLoading(true);
-      const { code } = await forgetPassword(values);
+      const { code } = await forgetPassword({
+        ...values,
+        password: encryptMd5(values.newPassword),
+      });
       if (Number(code) !== 200) return;
 
       globalMessage.success({

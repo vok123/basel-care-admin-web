@@ -3,7 +3,7 @@ import type { FormProps } from "antd";
 import { Checkbox, message } from "antd";
 import { Form, Button, Input } from "antd";
 import { setTitle } from "@/utils/helper";
-import { encryption, decryption } from "@south/utils";
+import { encryption, decryption, encryptMd5 } from "@south/utils";
 import Logo from "@/assets/images/logo.svg";
 import { postUserLogin } from "@/api";
 
@@ -76,7 +76,10 @@ function Login() {
   const handleFinish: FormProps["onFinish"] = async (values: LoginData) => {
     try {
       setLoading(true);
-      const { token } = await postUserLogin(values);
+      const { token } = await postUserLogin({
+        ...values,
+        password: encryptMd5(values.password),
+      });
 
       // 处理记住我逻辑
       const passwordObj = { value: values.password, expire: 0 };
@@ -183,8 +186,8 @@ function Login() {
             onFinish={handleFinish}
             onFinishFailed={handleFinishFailed}
             initialValues={{
-              username: "admin",
-              password: "admin123456",
+              username: "",
+              password: "",
             }}
           >
             <div className="text-#AAA6A6 text-14px mb-8px">

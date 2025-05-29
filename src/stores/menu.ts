@@ -27,6 +27,7 @@ export const useMenuStore = create<MenuState>()(
           icon: "la:service",
           label: "Chat",
           labelZh: "Chat",
+          labelEn: "Chat",
           key: "/chat",
           rule: "/chat",
           nav: "/chat",
