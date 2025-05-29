@@ -2,37 +2,11 @@
 	<h1>React Admin</h1>
 </div>
 
-[![license](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
-
-如果您觉得该项目对您有所帮助或者您喜欢我们的项目，请在 GitHub 上给我们一个 ⭐️。如果您有改进或新增功能的意愿欢迎提交 issues，感谢您的支持！
-
 ## ✨ 简介
 
 使用`React`,`Typescript`,`Vite`,`Antd`等主流技术开发的开箱即用的中后台前端项目，`Vite`实现自动生成路由，支持`KeepAlive`功能，`zustand`状态管理，支持虚拟滚动表格，`UnoCss`开发样式。
 
-## 🚀 项目演示
-[演示地址](https://southliu.github.io/)
-
-![01.gif](https://github.com/southliu/github-static/blob/main/react-admin/01.gif)
-
-![02.gif](https://github.com/southliu/github-static/blob/main/react-admin/02.gif)
-
-| ![03.gif](https://github.com/southliu/github-static/blob/main/react-admin/03.gif) | ![04.gif](https://github.com/southliu/github-static/blob/main/react-admin/04.gif) |
-| --- | --- |
-
 ## 💻 安装使用
-
-- 获取项目代码
-
-```bash
-git clone https://github.com/southliu/react-admin.git
-```
-
-- 选择目录
-
-```bash
-cd react-admin
-```
 
 - 安装全局依赖依赖，存在则不用安装
 
@@ -139,12 +113,6 @@ git push
   3. 样式统一，避免后期样式变动，导致牵一发而动全身。
   4. 公共组件二次封装或常用组件使用**Base**开头，便于区分。
 
-## 📕 Q&A常见问题
-#### 1. 页面权限如何配置？
-1. 通过登录接(/user/login)或重新授权接口(/user/refresh-permissions)获取permissions权限数据。
-2. 通过菜单接口(/menu/list)获取data中的rule权限数据，这个rule数据影响菜单显示，如果没返回rule则一直都显示。
-3. 页面内权限参考src/pages/system/menu.index.tsx文件内的pagePermission数据，pagePermission.page是显示页面的权限，根据第一点返回的permissions进行匹配。
-
 #### 2. 路由如何配置？
 路由根据文件夹路径自动生成，路径包含以下文件名或文件夹名称则不生成：
 
@@ -172,15 +140,5 @@ import { defaultMenus } from '@/menus';
 const menuList = defaultMenus;
 ```
 
-#### 4. @south/xxx依赖在哪查看？
-通过根目录`packages`文件中查看对于xxx文件的源码进行修改。
-
 #### 5. 安装新依赖时报错？
 使用了monorepo项目安装新依赖时需要在后面添加`-w`或`--workspace`，否则会报错，比如：`pnpm i mobx -w`。
-
-## 🧡 捐赠
-如果您觉得这个项目对您有帮助，您可以帮作者买一杯咖啡表示支持!
-
-| 微信 | 支付宝 |
-| --- | --- |
-| <img src="https://github.com/southliu/github-static/blob/main/pay/wechat.jpg" width="250" alt="wechat"> | <img src="https://github.com/southliu/github-static/blob/main/pay/alipay.jpg" width="250" alt="alipay">  |
