@@ -3,7 +3,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import i18n from "@/locales/config";
 import { TOKEN } from "@/utils/config";
 import { message } from "antd";
-import { getLocalInfo } from '@south/utils';
+import { getLocalInfo, removeLocalInfo } from "@south/utils";
 
 const { t } = i18n;
 
@@ -63,8 +63,11 @@ service.interceptors.response.use(
       // 特定错误码处理，例如未授权
       if ([401, 403].includes(res.code)) {
         // 登录过期或未登录，清除token
-        localStorage.removeItem("token");
-        // 这里可以添加导航到登录页面的逻辑
+        removeLocalInfo(TOKEN);
+        // 跳转到登录页面
+        setTimeout(() => {
+          window.location.hash = "/login";
+        }, 200);
       }
 
       return Promise.reject(new Error(res.msg || "请求失败"));
@@ -73,11 +76,19 @@ service.interceptors.response.use(
   },
   (error) => {
     console.error("响应错误:", error);
-
+    const status = error.response?.status;
     // 获取错误信息
     const errMsg =
       error.response?.data?.msg || error.message || t("Network error");
     message.error(errMsg);
+
+    if (status === 401 || status === 403) {
+      removeLocalInfo(TOKEN);
+      // 跳转到登录页面
+      setTimeout(() => {
+        window.location.hash = "/login";
+      }, 200);
+    }
 
     return Promise.reject(error);
   },
@@ -89,7 +100,9 @@ export function get<T = any>(
   params?: any,
   config?: AxiosRequestConfigExtended,
 ): Promise<ResponseData<T>> {
-  return service.get(url, { params, ...config });
+  return service
+    .get(url, { params, ...config })
+    .then((response) => response.data);
 }
 
 // 封装POST请求
@@ -98,7 +111,7 @@ export function post<T = any>(
   data?: any,
   config?: AxiosRequestConfigExtended,
 ): Promise<ResponseData<T>> {
-  return service.post(url, data, config);
+  return service.post(url, data, config).then((response) => response.data);
 }
 
 // 封装PUT请求
@@ -107,7 +120,7 @@ export function put<T = any>(
   data?: any,
   config?: AxiosRequestConfigExtended,
 ): Promise<ResponseData<T>> {
-  return service.put(url, data, config);
+  return service.put(url, data, config).then((response) => response.data);
 }
 
 // 封装DELETE请求
@@ -115,7 +128,7 @@ export function del<T = any>(
   url: string,
   config?: AxiosRequestConfigExtended,
 ): Promise<ResponseData<T>> {
-  return service.delete(url, config);
+  return service.delete(url, config).then((response) => response.data);
 }
 
 // 导出axios实例，方便自定义使用

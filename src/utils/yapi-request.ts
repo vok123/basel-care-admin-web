@@ -1,5 +1,5 @@
 import type { RequestFunctionParams } from "yapi-to-typescript";
-import { ResponseData, get, post, del, put } from "./fetch";
+import { get, post, del, put } from "./fetch";
 
 export interface RequestOptions {
   /**
@@ -55,8 +55,7 @@ export default function request<TResponseData>(
 
     // 处理响应
     requestPromise
-      .then((response) => {
-        const responseData = response.data as ResponseData;
+      .then((responseData) => {
         if (responseData.code === 0) {
           resolve(responseData.data as TResponseData);
         } else {

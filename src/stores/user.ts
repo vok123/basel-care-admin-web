@@ -15,7 +15,7 @@ interface UserState {
 export const useUserStore = create<UserState>()(
   devtools(
     (set) => ({
-      permissions: ['/chat'],
+      permissions: ["/chat", "/schedule", "/appointment"],
       userInfo: {
         id: 0,
         username: "",

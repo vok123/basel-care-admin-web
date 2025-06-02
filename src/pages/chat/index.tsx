@@ -21,19 +21,27 @@ function Chat() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [curConsultation, setCurConsultation] =
     useState<IPostPatientGetConsultationRes>();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [msgLoading, setMsgLoading] = useState(true);
   const [listLoading, setListLoading] = useState(true);
-  const cid = searchParams.get("cid");
   const scrollViewRef = useRef<HTMLDivElement>(null);
   const messageTimerRef = useRef<NodeJS.Timeout | null>(null);
   const timer = useRef<NodeJS.Timeout | null>(null);
   const [getToken] = useToken();
+  const cid = useRef<string>("");
+  const [searchValue, setSearchValue] = useState("");
 
   const msgList = useMemo(() => {
     return curConsultation?.messages || [];
   }, [curConsultation?.messages]);
+
+  const finalList = useMemo(() => {
+    if (!searchValue) {
+      return list;
+    }
+    return list.filter((item) =>
+      item.patientName?.toLowerCase().includes(searchValue.toLowerCase()),
+    );
+  }, [list, searchValue]);
 
   const scrollToBottom = useCallback(() => {
     if (scrollViewRef.current) {
@@ -73,6 +81,27 @@ function Chat() {
         setSubmitLoading(false);
       });
   };
+  const loopNewMessage = useCallback(() => {
+    clearTimeout(messageTimerRef.current!);
+    if (!getToken()) {
+      return;
+    }
+    if (cid.current) {
+      postDoctorGetConsultation({
+        consultationId: cid.current!,
+      })
+        .then((res) => {
+          setCurConsultation(res);
+        })
+        .finally(() => {
+          setMsgLoading(false);
+
+          messageTimerRef.current = setTimeout(() => {
+            loopNewMessage();
+          }, 1400);
+        });
+    }
+  }, [getToken]);
 
   const loopConsultation = useCallback(() => {
     if (!getToken()) {
@@ -85,47 +114,25 @@ function Chat() {
     })
       .then((res) => {
         setList(res.list || []);
+        if (!cid.current) {
+          cid.current = String(res.list?.[0]?.id || "");
+          loopNewMessage();
+        }
       })
       .finally(() => {
         setListLoading(false);
         timer.current = setTimeout(() => {
           loopConsultation();
-        }, 3000);
+        }, 1200);
       });
-  }, [getToken]);
+  }, [getToken, loopNewMessage]);
 
   useEffect(() => {
     loopConsultation();
     return () => {
       clearTimeout(timer.current!);
     };
-  }, [timer, loopConsultation]);
-
-  const loopNewMessage = useCallback(() => {
-    if (!getToken()) {
-      clearTimeout(messageTimerRef.current!);
-      return;
-    }
-    if (cid) {
-      postDoctorGetConsultation({
-        consultationId: cid,
-      })
-        .then((res) => {
-          setCurConsultation(res);
-        })
-        .finally(() => {
-          setMsgLoading(false);
-
-          messageTimerRef.current = setTimeout(() => {
-            loopNewMessage();
-          }, 1500);
-        });
-    }
-  }, [cid, getToken]);
-
-  useEffect(() => {
-    loopNewMessage();
-  }, [loopNewMessage]);
+  }, [loopConsultation, timer]);
 
   useEffect(() => {
     scrollToBottom();
@@ -139,24 +146,29 @@ function Chat() {
       >
         <div className="slider-header pt-3 flex flex-col gap-2 px-4">
           <div className="slider-title">Chat</div>
-          <Input placeholder="Search ..." />
+          <Input
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder="Search ..."
+          />
         </div>
 
         <div className="slider-content  flex flex-col gap-2 flex-1 overflow-y-auto">
           {listLoading ? (
             <div className="c-gray-4 text-center">Loading...</div>
-          ) : !list?.length ? (
+          ) : !finalList?.length ? (
             <div className="c-gray-4 text-center">No Data</div>
           ) : null}
-          {list.map((item) => {
+          {finalList.map((item) => {
             return (
               <div
                 key={item.id}
                 onClick={() => {
-                  clearTimeout(messageTimerRef.current!);
-                  navigate(`/chat?cid=${item.id}`);
+                  cid.current = String(item.id);
+                  setMsgLoading(true);
+                  setCurConsultation(undefined);
+                  loopNewMessage();
                 }}
-                className="slider-content-item hover:bg-[#EEF4F4]  py-1 rounded-[8px] cursor-pointer"
+                className={`slider-content-item hover:bg-[#EEF4F4]  py-1 rounded-[8px] cursor-pointer ${cid.current === String(item.id) ? "bg-[#EEF4F4]" : ""}`}
               >
                 <div className="flex justify-between items-center px-4">
                   <div className="item-title font-bold">{item.patientName}</div>
@@ -181,10 +193,10 @@ function Chat() {
         </div>
       </div>
 
-      {cid ? (
+      {cid.current ? (
         <div className="flex-1 bg h-full rounded-[8px] ml-3 overflow-hidden relative flex flex-col">
           <div className="chat-header bg-[#EEF4F4] px-3 py-3 card-header">
-            <div className="chat-header-title font-bold text-center">
+            <div className="chat-header-title font-bold text-center h-[22px]">
               {curConsultation?.patientName}
             </div>
           </div>

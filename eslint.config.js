@@ -132,6 +132,7 @@ export default tseslint.config(
       "no-fallthrough": "warn",
       "no-extra-boolean-cast": "warn",
       "no-case-declarations": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
       "no-async-promise-executor": "warn",
       // 禁止使用后缀运算符的非空断言"!"
       "@typescript-eslint/no-non-null-assertion": "warn",

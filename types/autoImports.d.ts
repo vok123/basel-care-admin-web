@@ -68,6 +68,7 @@ declare global {
   const TOKEN: typeof import('../src/utils/config')['TOKEN']
   const TableFilter: typeof import('../src/components/Table/components/TableFilter')['default']
   const Theme: typeof import('../src/components/Theme/index')['default']
+  const TimeSlots: typeof import('../src/components/complex/TimeSlots/index')['TimeSlots']
   const UpdateBtn: typeof import('../src/components/Buttons/index')['UpdateBtn']
   const VERSION: typeof import('../src/utils/config')['VERSION']
   const VirtualWrapper: typeof import('../src/components/Table/components/VirtualWrapper')['default']
