@@ -4,3 +4,4 @@ export * from './patient';
 export * from './doctor';
 export * from './countries';
 export * from './clinic';
+export * from './config';

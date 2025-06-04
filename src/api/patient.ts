@@ -65,7 +65,7 @@ export interface IPostPatientUpdateReq {
    */
   nricNumber?: string
   /**
-   * 出生日期
+   * 联系地址
    */
   address?: string
   /**
@@ -1130,6 +1130,14 @@ export interface IGetPatientGetRes {
    */
   gender?: 'MALE' | 'FEMALE' | 'OTHER'
   /**
+   * email
+   */
+  email?: string
+  /**
+   * 手机
+   */
+  phone?: string
+  /**
    * firstName
    */
   firstName?: string
@@ -1214,5 +1222,607 @@ export const useGetPatientGet = /*#__PURE__*/ makeRequestHook<
   GetPatientGetRequestConfig,
   ReturnType<typeof getPatientGet>
 >(getPatientGet)
+
+/**
+ * 接口 预约 的 **请求类型**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/makeAppointment`
+ */
+export interface IPostPatientMakeAppointmentReq {
+  /**
+   * 医生id,没有先不传
+   */
+  doctorId?: number
+  /**
+   * main_health_concerns
+   */
+  mainHealthConcerns?: string
+  /**
+   * 所属 诊所 id
+   */
+  clinicId?: number
+  /**
+   * 预约日期, yyyy-MM-dd
+   */
+  appointmentDate?: string
+  /**
+   * 预约时间段
+   */
+  slot?: number
+  /**
+   * 用药历史
+   */
+  drugAllergies?: string[]
+  /**
+   * 联系方式
+   */
+  contactDetails?: string
+  /**
+   * 是否正在用药
+   */
+  takingMedication?: boolean
+  /**
+   * 用药详情
+   */
+  medicationDetail?: string
+}
+
+/**
+ * 接口 预约 的 **返回类型**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/makeAppointment`
+ */
+export type IPostPatientMakeAppointmentRes = boolean
+
+/**
+ * 接口 预约 的 **请求配置的类型**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/makeAppointment`
+ */
+type PostPatientMakeAppointmentRequestConfig = Readonly<
+  RequestConfig<
+    'http://127.0.0.1:50505/mock/0',
+    'http://127.0.0.1',
+    '',
+    '/patient/makeAppointment',
+    'data',
+    string,
+    string,
+    false
+  >
+>
+
+/**
+ * 接口 预约 的 **请求配置**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/makeAppointment`
+ */
+const postPatientMakeAppointmentRequestConfig: PostPatientMakeAppointmentRequestConfig = /*#__PURE__*/ {
+  mockUrl: mockUrl_0_1_0_0,
+  devUrl: devUrl_0_1_0_0,
+  prodUrl: prodUrl_0_1_0_0,
+  path: '/patient/makeAppointment',
+  method: Method.POST,
+  requestHeaders: {},
+  requestBodyType: RequestBodyType.json,
+  responseBodyType: ResponseBodyType.json,
+  dataKey: dataKey_0_1_0_0,
+  paramNames: [],
+  queryNames: [],
+  requestDataOptional: false,
+  requestDataJsonSchema: {},
+  responseDataJsonSchema: {},
+  requestFunctionName: 'postPatientMakeAppointment',
+  queryStringArrayFormat: QueryStringArrayFormat.brackets,
+  extraInfo: {},
+}
+
+/**
+ * 接口 预约 的 **请求函数**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/makeAppointment`
+ */
+export const postPatientMakeAppointment = /*#__PURE__*/ (
+  requestData: IPostPatientMakeAppointmentReq,
+  ...args: UserRequestRestArgs
+) => {
+  return request<IPostPatientMakeAppointmentRes>(prepare(postPatientMakeAppointmentRequestConfig, requestData), ...args)
+}
+
+postPatientMakeAppointment.requestConfig = postPatientMakeAppointmentRequestConfig
+
+/**
+ * 接口 预约 的 **React Hook**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/makeAppointment`
+ */
+export const usePostPatientMakeAppointment = /*#__PURE__*/ makeRequestHook<
+  IPostPatientMakeAppointmentReq,
+  PostPatientMakeAppointmentRequestConfig,
+  ReturnType<typeof postPatientMakeAppointment>
+>(postPatientMakeAppointment)
+
+/**
+ * 接口 取消预约 的 **请求类型**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/cancelAppointment`
+ */
+export interface IPostPatientCancelAppointmentReq {
+  appointmentId: string
+}
+
+/**
+ * 接口 取消预约 的 **返回类型**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/cancelAppointment`
+ */
+export type IPostPatientCancelAppointmentRes = boolean
+
+/**
+ * 接口 取消预约 的 **请求配置的类型**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/cancelAppointment`
+ */
+type PostPatientCancelAppointmentRequestConfig = Readonly<
+  RequestConfig<
+    'http://127.0.0.1:50505/mock/0',
+    'http://127.0.0.1',
+    '',
+    '/patient/cancelAppointment',
+    'data',
+    string,
+    'appointmentId',
+    false
+  >
+>
+
+/**
+ * 接口 取消预约 的 **请求配置**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/cancelAppointment`
+ */
+const postPatientCancelAppointmentRequestConfig: PostPatientCancelAppointmentRequestConfig = /*#__PURE__*/ {
+  mockUrl: mockUrl_0_1_0_0,
+  devUrl: devUrl_0_1_0_0,
+  prodUrl: prodUrl_0_1_0_0,
+  path: '/patient/cancelAppointment',
+  method: Method.POST,
+  requestHeaders: {},
+  requestBodyType: RequestBodyType.raw,
+  responseBodyType: ResponseBodyType.json,
+  dataKey: dataKey_0_1_0_0,
+  paramNames: [],
+  queryNames: ['appointmentId'],
+  requestDataOptional: false,
+  requestDataJsonSchema: {},
+  responseDataJsonSchema: {},
+  requestFunctionName: 'postPatientCancelAppointment',
+  queryStringArrayFormat: QueryStringArrayFormat.brackets,
+  extraInfo: {},
+}
+
+/**
+ * 接口 取消预约 的 **请求函数**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/cancelAppointment`
+ */
+export const postPatientCancelAppointment = /*#__PURE__*/ (
+  requestData: IPostPatientCancelAppointmentReq,
+  ...args: UserRequestRestArgs
+) => {
+  return request<IPostPatientCancelAppointmentRes>(
+    prepare(postPatientCancelAppointmentRequestConfig, requestData),
+    ...args,
+  )
+}
+
+postPatientCancelAppointment.requestConfig = postPatientCancelAppointmentRequestConfig
+
+/**
+ * 接口 取消预约 的 **React Hook**
+ *
+ * @分类 患者中心
+ * @请求头 `POST /patient/cancelAppointment`
+ */
+export const usePostPatientCancelAppointment = /*#__PURE__*/ makeRequestHook<
+  IPostPatientCancelAppointmentReq,
+  PostPatientCancelAppointmentRequestConfig,
+  ReturnType<typeof postPatientCancelAppointment>
+>(postPatientCancelAppointment)
+
+/**
+ * 接口 查询时间段状态 的 **请求类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getSlotsStatus`
+ */
+export interface IGetPatientGetSlotsStatusReq {
+  doctorId: string
+  clinicId: string
+  /**
+   * yyyy-MM-dd
+   */
+  appointmentDate: string
+}
+
+/**
+ * 接口 查询时间段状态 的 **返回类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getSlotsStatus`
+ */
+export type IGetPatientGetSlotsStatusRes = {
+  /**
+   * 日期
+   */
+  date?: string
+  /**
+   * 时间段
+   */
+  slot?: number
+  /**
+   * 剩余数量
+   */
+  remain?: number
+  /**
+   * 最大数量
+   */
+  max?: number
+  /**
+   * 当前数量
+   */
+  current?: number
+}[]
+
+/**
+ * 接口 查询时间段状态 的 **请求配置的类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getSlotsStatus`
+ */
+type GetPatientGetSlotsStatusRequestConfig = Readonly<
+  RequestConfig<
+    'http://127.0.0.1:50505/mock/0',
+    'http://127.0.0.1',
+    '',
+    '/patient/getSlotsStatus',
+    'data',
+    string,
+    'doctorId' | 'clinicId' | 'appointmentDate',
+    false
+  >
+>
+
+/**
+ * 接口 查询时间段状态 的 **请求配置**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getSlotsStatus`
+ */
+const getPatientGetSlotsStatusRequestConfig: GetPatientGetSlotsStatusRequestConfig = /*#__PURE__*/ {
+  mockUrl: mockUrl_0_1_0_0,
+  devUrl: devUrl_0_1_0_0,
+  prodUrl: prodUrl_0_1_0_0,
+  path: '/patient/getSlotsStatus',
+  method: Method.GET,
+  requestHeaders: {},
+  requestBodyType: RequestBodyType.query,
+  responseBodyType: ResponseBodyType.json,
+  dataKey: dataKey_0_1_0_0,
+  paramNames: [],
+  queryNames: ['doctorId', 'clinicId', 'appointmentDate'],
+  requestDataOptional: false,
+  requestDataJsonSchema: {},
+  responseDataJsonSchema: {},
+  requestFunctionName: 'getPatientGetSlotsStatus',
+  queryStringArrayFormat: QueryStringArrayFormat.brackets,
+  extraInfo: {},
+}
+
+/**
+ * 接口 查询时间段状态 的 **请求函数**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getSlotsStatus`
+ */
+export const getPatientGetSlotsStatus = /*#__PURE__*/ (
+  requestData: IGetPatientGetSlotsStatusReq,
+  ...args: UserRequestRestArgs
+) => {
+  return request<IGetPatientGetSlotsStatusRes>(prepare(getPatientGetSlotsStatusRequestConfig, requestData), ...args)
+}
+
+getPatientGetSlotsStatus.requestConfig = getPatientGetSlotsStatusRequestConfig
+
+/**
+ * 接口 查询时间段状态 的 **React Hook**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getSlotsStatus`
+ */
+export const useGetPatientGetSlotsStatus = /*#__PURE__*/ makeRequestHook<
+  IGetPatientGetSlotsStatusReq,
+  GetPatientGetSlotsStatusRequestConfig,
+  ReturnType<typeof getPatientGetSlotsStatus>
+>(getPatientGetSlotsStatus)
+
+/**
+ * 接口 查询预约 的 **请求类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getAppointments`
+ */
+export interface IGetPatientGetAppointmentsReq {}
+
+/**
+ * 接口 查询预约 的 **返回类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getAppointments`
+ */
+export type IGetPatientGetAppointmentsRes = {
+  /**
+   * 预约id
+   */
+  id?: number
+  /**
+   * 患者id
+   */
+  patientId?: number
+  /**
+   * Patient详情
+   */
+  patient?: {
+    /**
+     * id
+     */
+    id?: number
+    /**
+     * 性别
+     */
+    gender?: 'MALE' | 'FEMALE' | 'OTHER'
+    /**
+     * email
+     */
+    email?: string
+    /**
+     * 手机
+     */
+    phone?: string
+    /**
+     * firstName
+     */
+    firstName?: string
+    /**
+     * lastName
+     */
+    lastName?: string
+    /**
+     * 国家
+     */
+    country?: string
+    /**
+     * nricNumber
+     */
+    nricNumber?: string
+    /**
+     * 出生日期
+     */
+    address?: string
+    /**
+     * 药物过敏
+     */
+    drugAllergies?: string[]
+  }
+  /**
+   * 医生id,没有先不传
+   */
+  doctorId?: number
+  /**
+   * 症状描述
+   */
+  mainHealthConcerns?: string
+  /**
+   * 所属 诊所 id
+   */
+  clinicId?: number
+  /**
+   * 数据
+   */
+  clinic?: {
+    /**
+     * 诊所ID
+     */
+    id?: number
+    /**
+     * 英文名称
+     */
+    enName?: string
+    /**
+     * 中文名称
+     */
+    zhName?: string
+    /**
+     * 介绍
+     */
+    introduction?: string
+    /**
+     * 街道名称
+     */
+    streetName?: string
+    /**
+     * 国家代码
+     */
+    countryCode?: string
+    /**
+     * 手机号码
+     */
+    phone?: string
+    /**
+     * 邮箱
+     */
+    email?: string
+    /**
+     * 纬度
+     */
+    latitude?: number
+    /**
+     * 经度
+     */
+    longitude?: number
+    /**
+     * 机构类型
+     */
+    clinicType?: string
+    /**
+     * 官网
+     */
+    website?: string
+    /**
+     * 卫生部注册号
+     */
+    mohRegistration?: string
+    /**
+     * 医疗机构代码
+     */
+    hciCode?: string
+    /**
+     * 营业时间
+     */
+    openingHours?: {
+      /**
+       * Monday,...Friday, Public holiday
+       */
+      dayType?: string[]
+      /**
+       * 是否连续，为true， dayType=[Monday, Friday]代表Monday~Friday, 为false， dayType=[Sunday, Public holiday]Sunday, Public holiday
+       */
+      continuous?: boolean
+      /**
+       * 时间段，格式为HH:mm-HH:mm, 如果timeStyle=false,也可以是Closed，Teleconsult
+       */
+      timeDuration?: string[]
+      /**
+       * 时间段格式，为true，timeDuration=[09:00-18:00], 为false，timeDuration=[Closed, Teleconsult]
+       */
+      timeStyle?: boolean
+    }[]
+  }
+  /**
+   * 预约日期
+   */
+  appointmentDate?: string
+  /**
+   * 预约号
+   */
+  appointmentNumber?: string
+  /**
+   * 预约状态
+   */
+  status?: string
+  /**
+   * 预约时间段
+   */
+  slot?: number
+  /**
+   * 用药历史
+   */
+  drugAllergies?: string[]
+  /**
+   * 联系方式
+   */
+  contactDetails?: string
+  /**
+   * 是否正在用药
+   */
+  takingMedication?: boolean
+  /**
+   * 用药详情
+   */
+  medicationDetail?: string
+}[]
+
+/**
+ * 接口 查询预约 的 **请求配置的类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getAppointments`
+ */
+type GetPatientGetAppointmentsRequestConfig = Readonly<
+  RequestConfig<
+    'http://127.0.0.1:50505/mock/0',
+    'http://127.0.0.1',
+    '',
+    '/patient/getAppointments',
+    'data',
+    string,
+    string,
+    true
+  >
+>
+
+/**
+ * 接口 查询预约 的 **请求配置**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getAppointments`
+ */
+const getPatientGetAppointmentsRequestConfig: GetPatientGetAppointmentsRequestConfig = /*#__PURE__*/ {
+  mockUrl: mockUrl_0_1_0_0,
+  devUrl: devUrl_0_1_0_0,
+  prodUrl: prodUrl_0_1_0_0,
+  path: '/patient/getAppointments',
+  method: Method.GET,
+  requestHeaders: {},
+  requestBodyType: RequestBodyType.query,
+  responseBodyType: ResponseBodyType.json,
+  dataKey: dataKey_0_1_0_0,
+  paramNames: [],
+  queryNames: [],
+  requestDataOptional: true,
+  requestDataJsonSchema: {},
+  responseDataJsonSchema: {},
+  requestFunctionName: 'getPatientGetAppointments',
+  queryStringArrayFormat: QueryStringArrayFormat.brackets,
+  extraInfo: {},
+}
+
+/**
+ * 接口 查询预约 的 **请求函数**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getAppointments`
+ */
+export const getPatientGetAppointments = /*#__PURE__*/ (
+  requestData?: IGetPatientGetAppointmentsReq,
+  ...args: UserRequestRestArgs
+) => {
+  return request<IGetPatientGetAppointmentsRes>(prepare(getPatientGetAppointmentsRequestConfig, requestData), ...args)
+}
+
+getPatientGetAppointments.requestConfig = getPatientGetAppointmentsRequestConfig
+
+/**
+ * 接口 查询预约 的 **React Hook**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/getAppointments`
+ */
+export const useGetPatientGetAppointments = /*#__PURE__*/ makeRequestHook<
+  IGetPatientGetAppointmentsReq,
+  GetPatientGetAppointmentsRequestConfig,
+  ReturnType<typeof getPatientGetAppointments>
+>(getPatientGetAppointments)
 
 /* prettier-ignore-end */

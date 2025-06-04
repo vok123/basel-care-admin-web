@@ -1,87 +1,126 @@
 /* eslint-disable max-nested-callbacks */
-import { postClinicSearch } from "@/api";
-import { get } from "@/utils/fetch";
+import {
+  getDoctorGetPatientAppointments,
+  IGetDoctorGetPatientAppointmentsRes,
+  IPostDoctorGetPatientRes,
+  postClinicSearch,
+  postDoctorGetPatient,
+  postDoctorModifyAppointment,
+} from "@/api";
 import { slotToTime } from "@/utils/time";
 import {
   Table,
   Tabs,
-  TableProps,
   Button,
   Tag,
   Modal,
   Form,
-  Input,
   DatePicker,
   Select,
+  message,
+  Spin,
 } from "antd";
 import dayjs from "dayjs";
 const TableColumn = Table.Column;
 
-interface AppointmentItem {
-  id: number;
-  patientId?: number;
-  patientName?: string;
-  doctorId?: number;
-  mainHealthConcerns?: string;
-  clinicId?: number;
-  clinic?: any; // Assuming ClinicResp is defined elsewhere
-  appointmentDate?: string; // ISO date string
-  appointmentNumber?: string;
-  status?: string;
-  slot?: number;
-  drugAllergies?: string[];
-  contactDetails?: string;
-  takingMedication?: boolean;
+type AppointmentItem = IGetDoctorGetPatientAppointmentsRes[number];
+
+interface AppointmentTableProps {
+  dataSource: AppointmentItem[];
+  loading?: boolean;
+  onRefresh?: () => void;
 }
 
-const AppointmentTable = memo<TableProps>((props) => {
+const AppointmentTable = memo<AppointmentTableProps>((props) => {
   const [updateTarget, setUpdateTarget] = useState<AppointmentItem | null>(
     null,
   );
   const [clinicOptions, setClinicOptions] = useState<any[]>([]);
+  const [patientInfo, setPatientInfo] = useState<IPostDoctorGetPatientRes>();
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [clinicLoading, setClinicLoading] = useState(true);
+  const [patientInfoLoading, setPatientInfoLoading] = useState(true);
+  const statusMap: Record<string, string> = {
+    COMPLETED: "Completed",
+    CONFIRMED: "Confirmed",
+    PENDING: "Unconfirmed",
+  };
 
   const initialValues = useMemo(() => {
     if (!updateTarget) return {};
     const time =
       updateTarget?.appointmentDate + " " + slotToTime(updateTarget.slot);
 
-    console.log(
-      updateTarget?.appointmentDate + " " + slotToTime(updateTarget.slot),
-    );
     return {
       ...updateTarget,
       appointmentDate: dayjs(time),
     };
   }, [updateTarget]);
 
-  const onFinish = useCallback((values: AppointmentItem) => {
-    const appointmentData = {
-      ...values,
-      appointmentDate: dayjs(values.appointmentDate).format("YYYY-MM-DD"),
-      slot: values.slot,
-    };
-    console.log("Submitting appointment data:", appointmentData);
-    setUpdateTarget(null);
-  }, []);
+  const getPatientInfo = (patientId?: number) => {
+    setPatientInfoLoading(true);
+    postDoctorGetPatient({ patientId: String(patientId) })
+      .then((data) => {
+        setPatientInfo(data);
+      })
+      .finally(() => {
+        setPatientInfoLoading(false);
+      });
+  };
+
+  const onFinish = useCallback(
+    (values: AppointmentItem) => {
+      const appointmentData = {
+        ...values,
+        appointmentDate: dayjs(values.appointmentDate).format("YYYY-MM-DD"),
+        slot: values.slot,
+      };
+      setUpdateLoading(true);
+      postDoctorModifyAppointment({
+        appointmentId: updateTarget!.id,
+        clinicId: values.clinicId,
+        ...appointmentData,
+      })
+        .then(() => {
+          message.success("Appointment updated successfully!");
+          setUpdateTarget(null);
+          props.onRefresh?.();
+        })
+        .finally(() => {
+          setUpdateLoading(false);
+        });
+    },
+    [props, updateTarget],
+  );
 
   useEffect(() => {
     if (updateTarget) {
-      postClinicSearch({ pageNo: 1, pageSize: 100 }).then((res) => {
-        const options =
-          (res?.list || []).map((item) => {
-            return {
-              label: item.enName,
-              value: item.id,
-            };
-          }) || [];
-        setClinicOptions(options);
-      });
+      postClinicSearch({ pageNo: 1, pageSize: 100 })
+        .then((res) => {
+          const options =
+            (res?.list || []).map((item) => {
+              return {
+                label: item.enName,
+                value: item.id,
+              };
+            }) || [];
+          setClinicOptions(options);
+        })
+        .finally(() => {
+          setClinicLoading(false);
+        });
     }
   }, [updateTarget]);
 
   return (
     <>
-      <Table {...props} size="small" rowKey="id" className="appointment-table">
+      <Table
+        dataSource={props.dataSource || []}
+        size="small"
+        rowKey="id"
+        loading={props.loading}
+        className="appointment-table"
+      >
         <TableColumn title="ID" dataIndex="id" key="id" />
         <TableColumn
           title="Appointment Date"
@@ -90,16 +129,19 @@ const AppointmentTable = memo<TableProps>((props) => {
           }}
         />
         <TableColumn
-          title="patientName"
-          dataIndex="patientName"
-          key="patientName"
+          title="FirstName"
+          render={({ patient }) => patient.firstName}
         />
-        <TableColumn title="Email" dataIndex="email" key="patientId" />
         <TableColumn
-          title="Phone Number"
-          dataIndex="phoneNumber"
-          key="phoneNumber"
+          title="LastName"
+          render={({ patient }) => patient.lastName}
         />
+        <TableColumn
+          title="Clinic Name"
+          render={({ clinic }) => clinic.enName}
+        />
+        <TableColumn title="Email" dataIndex="email" key="email" />
+        <TableColumn title="Phone Number" dataIndex="phone" key="phone" />
         <TableColumn
           title="Drug Allergies"
           dataIndex="drugAllergies"
@@ -114,25 +156,48 @@ const AppointmentTable = memo<TableProps>((props) => {
               : "None"
           }
         />
+
+        <TableColumn
+          title="Status"
+          render={({ status }) => statusMap[status]}
+        />
         <TableColumn
           title="Action"
           render={(row) => (
-            <>
-              <Button
-                onClick={() => {
-                  setUpdateTarget(row);
-                }}
-                type="primary"
-                size="small"
-              >
-                Update
-              </Button>
-            </>
+            <div className="flex gap-3">
+              {row.status === "PENDING" ? (
+                <Button
+                  onClick={() => {
+                    setUpdateTarget(row);
+                    getPatientInfo(row.patientId);
+                    setClinicLoading(true);
+                  }}
+                  size="small"
+                  color="geekblue"
+                  variant="outlined"
+                >
+                  Update
+                </Button>
+              ) : null}
+              {row.status === "PENDING" ? (
+                <ConfirmAppointment
+                  onRefresh={props.onRefresh}
+                  appointmentId={row.id}
+                />
+              ) : null}
+              {row.status === "CONFIRMED" ? (
+                <CompleteAppointment
+                  onRefresh={props.onRefresh}
+                  appointmentId={row.id}
+                />
+              ) : null}
+            </div>
           )}
         />
       </Table>
 
       <Modal
+        title="Update Appointment"
         footer={null}
         open={!!updateTarget}
         onCancel={() => setUpdateTarget(null)}
@@ -142,16 +207,28 @@ const AppointmentTable = memo<TableProps>((props) => {
           onFinish={onFinish}
           layout="vertical"
           autoComplete="off"
+          className="mt-8!"
+          key={updateTarget?.id || "appointment-form"}
         >
-          <Form.Item label="Patient Name" name="patientName">
-            <Input readOnly />
-          </Form.Item>
-          <Form.Item label="Email" name="email">
-            <Input readOnly />
-          </Form.Item>
-          <Form.Item label="Phone Number" name="phoneNumber">
-            <Input readOnly />
-          </Form.Item>
+          <Spin spinning={patientInfoLoading}>
+            <div className="flex">
+              <Form.Item className="flex-1" label="Name">
+                <div className="c-gray-5">
+                  {patientInfo?.firstName + " " + patientInfo?.lastName}
+                </div>
+              </Form.Item>
+              <Form.Item className="flex-1" label="Email" name="email">
+                <div className="c-gray-5">{patientInfo?.email || ""}</div>
+              </Form.Item>
+              <Form.Item
+                className="flex-1"
+                label="Phone Number"
+                name="phoneNumber"
+              >
+                <div className="c-gray-5">{patientInfo?.phone || ""}</div>
+              </Form.Item>
+            </div>
+          </Spin>
           <Form.Item
             rules={[
               {
@@ -162,7 +239,7 @@ const AppointmentTable = memo<TableProps>((props) => {
             label="Clinic"
             name="clinicId"
           >
-            <Select options={clinicOptions} />
+            <Select loading={clinicLoading} options={clinicOptions} />
           </Form.Item>
           <Form.Item
             label="Appointment Date"
@@ -190,7 +267,7 @@ const AppointmentTable = memo<TableProps>((props) => {
           </Form.Item>
 
           <Form.Item className="flex justify-end">
-            <Button type="primary" htmlType="submit">
+            <Button loading={updateLoading} type="primary" htmlType="submit">
               Update Appointment
             </Button>
           </Form.Item>
@@ -202,6 +279,8 @@ const AppointmentTable = memo<TableProps>((props) => {
 
 const AppointmentPage = () => {
   const [appointmentList, setAppointmentList] = useState<AppointmentItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const timer = useRef<number>(0);
 
   const upComingAppointments = useMemo(() => {
     return appointmentList;
@@ -211,10 +290,31 @@ const AppointmentPage = () => {
     return appointmentList;
   }, [appointmentList]);
 
+  const loadData = useCallback(() => {
+    clearTimeout(timer.current);
+    getDoctorGetPatientAppointments()
+      .then((data) => {
+        setAppointmentList(data || []);
+      })
+      .finally(() => {
+        setLoading(false);
+        timer.current = window.setTimeout(loadData, 3000);
+      });
+  }, []);
+
+  const refreshData = useCallback(() => {
+    setLoading(true);
+    loadData();
+  }, [loadData]);
+
   useEffect(() => {
-    get("/clinic/getAppointments", { clinicId: 1 }).then((res) => {
-      setAppointmentList(res.data || []);
-    });
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
   }, []);
 
   return (
@@ -225,7 +325,13 @@ const AppointmentPage = () => {
           {
             key: "1",
             label: "Upcoming",
-            children: <AppointmentTable dataSource={upComingAppointments} />,
+            children: (
+              <AppointmentTable
+                loading={loading}
+                onRefresh={refreshData}
+                dataSource={upComingAppointments}
+              />
+            ),
           },
           {
             key: "2",

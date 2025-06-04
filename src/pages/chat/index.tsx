@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import "./index.less";
 import { MessageItem } from "@/components/complex/MessageItem";
 import { useToken } from "@/hooks/useToken";
+import { useEventListener } from "ahooks";
 
 type ConsultationItem =
   Required<IPostDoctorGetConsultationPageRes>["list"][number];
@@ -29,6 +30,25 @@ function Chat() {
   const [getToken] = useToken();
   const cid = useRef<string>("");
   const [searchValue, setSearchValue] = useState("");
+  const isVisibleRef = useRef(true);
+
+  useEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      isVisibleRef.current = true;
+      if (cid.current) {
+        setMsgLoading(true);
+        loopNewMessage();
+        loopConsultation();
+      }
+    } else if (document.visibilityState === "hidden") {
+      console.log("页面不可见，停止轮询");
+      isVisibleRef.current = false;
+      clearTimeout(messageTimerRef.current!);
+      clearTimeout(timer.current!);
+      setMsgLoading(false);
+      setListLoading(false);
+    }
+  });
 
   const msgList = useMemo(() => {
     return curConsultation?.messages || [];
@@ -81,6 +101,7 @@ function Chat() {
         setSubmitLoading(false);
       });
   };
+
   const loopNewMessage = useCallback(() => {
     clearTimeout(messageTimerRef.current!);
     if (!getToken()) {
@@ -105,6 +126,10 @@ function Chat() {
 
   const loopConsultation = useCallback(() => {
     if (!getToken()) {
+      clearTimeout(timer.current!);
+      return;
+    }
+    if (!isVisibleRef.current) {
       clearTimeout(timer.current!);
       return;
     }
@@ -171,7 +196,9 @@ function Chat() {
                 className={`slider-content-item hover:bg-[#EEF4F4]  py-1 rounded-[8px] cursor-pointer ${cid.current === String(item.id) ? "bg-[#EEF4F4]" : ""}`}
               >
                 <div className="flex justify-between items-center px-4">
-                  <div className="item-title font-bold">{item.patientName}</div>
+                  <div className="item-title font-bold ">
+                    {item.patientName}
+                  </div>
                   <div className="item-time c-gray-4 text-xs font-400">
                     {dayjs(item.createdAt).format("HH:mm:ss")}
                   </div>
@@ -196,8 +223,9 @@ function Chat() {
       {cid.current ? (
         <div className="flex-1 bg h-full rounded-[8px] ml-3 overflow-hidden relative flex flex-col">
           <div className="chat-header bg-[#EEF4F4] px-3 py-3 card-header">
-            <div className="chat-header-title font-bold text-center h-[22px]">
+            <div className="chat-header-title font-bold text-center h-[22px] flex justify-center gap-3">
               {curConsultation?.patientName}
+              {curConsultation ? <PatientInfo patientId={curConsultation?.patientId} /> : null}
             </div>
           </div>
 

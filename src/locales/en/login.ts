@@ -5,6 +5,7 @@ export default {
   newPassword: 'New Password',
   password: 'Password',
   username: 'Username',
+  registerNew: 'Register New User',
   phoneNumber: 'Phone Number',
   verificationCode: 'Verification Code',
   getVerificationCode: 'Verification',
