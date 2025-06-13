@@ -140,8 +140,8 @@ const AppointmentTable = memo<AppointmentTableProps>((props) => {
           title="Clinic Name"
           render={({ clinic }) => clinic.enName}
         />
-        <TableColumn title="Email" dataIndex="email" key="email" />
-        <TableColumn title="Phone Number" dataIndex="phone" key="phone" />
+        <TableColumn title="Email" render={({patient}) => patient.email} />
+        <TableColumn title="Phone Number" render={({patient}) => patient.phone} />
         <TableColumn
           title="Drug Allergies"
           dataIndex="drugAllergies"
