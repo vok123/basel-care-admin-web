@@ -10,7 +10,6 @@ import {
 import { slotToTime } from "@/utils/time";
 import {
   Table,
-  Tabs,
   Button,
   Tag,
   Modal,
@@ -44,6 +43,7 @@ const AppointmentTable = memo<AppointmentTableProps>((props) => {
     COMPLETED: "Completed",
     CONFIRMED: "Confirmed",
     PENDING: "Unconfirmed",
+    CANCELLED: "Cancelled",
   };
 
   const initialValues = useMemo(() => {
@@ -140,8 +140,11 @@ const AppointmentTable = memo<AppointmentTableProps>((props) => {
           title="Clinic Name"
           render={({ clinic }) => clinic.enName}
         />
-        <TableColumn title="Email" render={({patient}) => patient.email} />
-        <TableColumn title="Phone Number" render={({patient}) => patient.phone} />
+        <TableColumn title="Email" render={({ patient }) => patient.email} />
+        <TableColumn
+          title="Phone Number"
+          render={({ patient }) => patient.phone}
+        />
         <TableColumn
           title="Drug Allergies"
           dataIndex="drugAllergies"
@@ -187,6 +190,12 @@ const AppointmentTable = memo<AppointmentTableProps>((props) => {
               ) : null}
               {row.status === "CONFIRMED" ? (
                 <CompleteAppointment
+                  onRefresh={props.onRefresh}
+                  appointmentId={row.id}
+                />
+              ) : null}
+              {["PENDING", "CONFIRMED"].includes(row.status) ? (
+                <CanceledAppointment
                   onRefresh={props.onRefresh}
                   appointmentId={row.id}
                 />
@@ -319,7 +328,7 @@ const AppointmentPage = () => {
 
   return (
     <div className="appointment-page h-full bg-white pt-3 px-3">
-      <Tabs
+      {/* <Tabs
         defaultActiveKey="1"
         items={[
           {
@@ -340,6 +349,11 @@ const AppointmentPage = () => {
           },
         ]}
         className="h-full"
+      /> */}
+      <AppointmentTable
+        loading={loading}
+        onRefresh={refreshData}
+        dataSource={upComingAppointments}
       />
     </div>
   );

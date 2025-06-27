@@ -283,6 +283,10 @@ export interface IPostPatientRegisterReq {
    * lastName
    */
   lastName?: string
+  /**
+   * 性别
+   */
+  gender?: 'MALE' | 'FEMALE' | 'OTHER'
 }
 
 /**
@@ -1824,5 +1828,90 @@ export const useGetPatientGetAppointments = /*#__PURE__*/ makeRequestHook<
   GetPatientGetAppointmentsRequestConfig,
   ReturnType<typeof getPatientGetAppointments>
 >(getPatientGetAppointments)
+
+/**
+ * 接口 删除用户 的 **请求类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/delete`
+ */
+export interface IGetPatientDeleteReq {}
+
+/**
+ * 接口 删除用户 的 **返回类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/delete`
+ */
+export type IGetPatientDeleteRes = boolean
+
+/**
+ * 接口 删除用户 的 **请求配置的类型**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/delete`
+ */
+type GetPatientDeleteRequestConfig = Readonly<
+  RequestConfig<
+    'http://127.0.0.1:50505/mock/0',
+    'http://127.0.0.1',
+    '',
+    '/patient/delete',
+    'data',
+    string,
+    string,
+    true
+  >
+>
+
+/**
+ * 接口 删除用户 的 **请求配置**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/delete`
+ */
+const getPatientDeleteRequestConfig: GetPatientDeleteRequestConfig = /*#__PURE__*/ {
+  mockUrl: mockUrl_0_1_0_0,
+  devUrl: devUrl_0_1_0_0,
+  prodUrl: prodUrl_0_1_0_0,
+  path: '/patient/delete',
+  method: Method.GET,
+  requestHeaders: {},
+  requestBodyType: RequestBodyType.query,
+  responseBodyType: ResponseBodyType.json,
+  dataKey: dataKey_0_1_0_0,
+  paramNames: [],
+  queryNames: [],
+  requestDataOptional: true,
+  requestDataJsonSchema: {},
+  responseDataJsonSchema: {},
+  requestFunctionName: 'getPatientDelete',
+  queryStringArrayFormat: QueryStringArrayFormat.brackets,
+  extraInfo: {},
+}
+
+/**
+ * 接口 删除用户 的 **请求函数**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/delete`
+ */
+export const getPatientDelete = /*#__PURE__*/ (requestData?: IGetPatientDeleteReq, ...args: UserRequestRestArgs) => {
+  return request<IGetPatientDeleteRes>(prepare(getPatientDeleteRequestConfig, requestData), ...args)
+}
+
+getPatientDelete.requestConfig = getPatientDeleteRequestConfig
+
+/**
+ * 接口 删除用户 的 **React Hook**
+ *
+ * @分类 患者中心
+ * @请求头 `GET /patient/delete`
+ */
+export const useGetPatientDelete = /*#__PURE__*/ makeRequestHook<
+  IGetPatientDeleteReq,
+  GetPatientDeleteRequestConfig,
+  ReturnType<typeof getPatientDelete>
+>(getPatientDelete)
 
 /* prettier-ignore-end */

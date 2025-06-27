@@ -24,6 +24,7 @@ declare global {
   const BaseTimeRangePicker: typeof import('../src/components/Dates/index')['BaseTimeRangePicker']
   const BaseTransfer: typeof import('../src/components/Transfer/BaseTransfer')['default']
   const BaseTreeSelect: typeof import('../src/components/Selects/index')['BaseTreeSelect']
+  const CanceledAppointment: typeof import('../src/components/complex/CancellAppointment/index')['CanceledAppointment']
   const ComplateAppointment: typeof import('../src/components/complex/CompleteAppointment/index')['ComplateAppointment']
   const CompleteAppointment: typeof import('../src/components/complex/CompleteAppointment/index')['CompleteAppointment']
   const ConfirmAppointment: typeof import('../src/components/complex/ConfirmAppointment/index')['ConfirmAppointment']
