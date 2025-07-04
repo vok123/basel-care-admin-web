@@ -52,6 +52,10 @@ export interface IPostClinicSearchReq {
    * 关键词
    */
   keyword?: string
+  /**
+   * 是否已获资质
+   */
+  certificated?: boolean
 }
 
 /**
@@ -142,6 +146,18 @@ export interface IPostClinicSearchRes {
        */
       timeStyle?: boolean
     }[]
+    /**
+     * 是否可预订/可用
+     */
+    enable?: boolean
+    /**
+     * 分组
+     */
+    grp?: string
+    /**
+     * certificated
+     */
+    certificated?: boolean
   }[]
   /**
    * 总量
@@ -324,6 +340,18 @@ export interface IGetClinicGetRes {
      */
     timeStyle?: boolean
   }[]
+  /**
+   * 是否可预订/可用
+   */
+  enable?: boolean
+  /**
+   * 分组
+   */
+  grp?: string
+  /**
+   * certificated
+   */
+  certificated?: boolean
 }
 
 /**
@@ -558,6 +586,18 @@ export type IGetClinicGetAppointmentsRes = {
        */
       timeStyle?: boolean
     }[]
+    /**
+     * 是否可预订/可用
+     */
+    enable?: boolean
+    /**
+     * 分组
+     */
+    grp?: string
+    /**
+     * certificated
+     */
+    certificated?: boolean
   }
   /**
    * 预约日期

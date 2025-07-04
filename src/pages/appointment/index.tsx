@@ -100,7 +100,7 @@ const AppointmentTable = memo<AppointmentTableProps>((props) => {
           const options =
             (res?.list || []).map((item) => {
               return {
-                label: item.enName,
+                label: item?.enName,
                 value: item.id,
               };
             }) || [];
@@ -138,7 +138,7 @@ const AppointmentTable = memo<AppointmentTableProps>((props) => {
         />
         <TableColumn
           title="Clinic Name"
-          render={({ clinic }) => clinic.enName}
+          render={({ clinic }) => clinic?.enName}
         />
         <TableColumn title="Email" render={({ patient }) => patient.email} />
         <TableColumn
@@ -295,9 +295,9 @@ const AppointmentPage = () => {
     return appointmentList;
   }, [appointmentList]);
 
-  const ongoingAppointments = useMemo(() => {
-    return appointmentList;
-  }, [appointmentList]);
+  // const ongoingAppointments = useMemo(() => {
+  //   return appointmentList;
+  // }, [appointmentList]);
 
   const loadData = useCallback(() => {
     clearTimeout(timer.current);

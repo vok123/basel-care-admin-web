@@ -1722,6 +1722,18 @@ export type IGetPatientGetAppointmentsRes = {
        */
       timeStyle?: boolean
     }[]
+    /**
+     * 是否可预订/可用
+     */
+    enable?: boolean
+    /**
+     * 分组
+     */
+    grp?: string
+    /**
+     * certificated
+     */
+    certificated?: boolean
   }
   /**
    * 预约日期
