@@ -27,11 +27,11 @@ interface ChatState {
   currentConsultationId: string;
   searchValue: string;
   isPolling: boolean;
-  
+
   // 定时器引用
   messageTimerRef?: NodeJS.Timeout;
   listTimerRef?: NodeJS.Timeout;
-  
+
   // 动作
   setList: (list: ConsultationItem[]) => void;
   setCurConsultation: (consultation?: IPostPatientGetConsultationRes) => void;
@@ -39,16 +39,16 @@ interface ChatState {
   setListLoading: (loading: boolean) => void;
   setCurrentConsultationId: (id: string) => void;
   setSearchValue: (value: string) => void;
-  
+
   // 轮询相关
   startPolling: () => void;
   stopPolling: () => void;
   loopConsultationList: () => void;
   loopNewMessage: () => void;
-  
+
   // 消息相关
   sendMessage: (content: string) => Promise<void>;
-  
+
   // 通知相关
   showNotification: (title: string, body: string) => void;
   requestNotificationPermission: () => Promise<void>;
@@ -147,7 +147,9 @@ export const useChatStore = create<ChatState>()(
                     oldItem &&
                     (newItem.unreadMessageCount || 0) >
                       (oldItem.unreadMessageCount || 0) &&
-                    newItem.lastMessage?.senderType === "PATIENT"
+                    newItem.lastMessage?.senderType === "PATIENT" &&
+                    // 如果用户正在与该患者聊天，则不显示通知
+                    String(newItem.id) !== currentState.currentConsultationId
                   );
                 });
 
@@ -201,15 +203,16 @@ export const useChatStore = create<ChatState>()(
           consultationId: state.currentConsultationId,
         })
           .then((res) => {
+            if (String(res.id) !== String(state.currentConsultationId)) {
+              console.warn("Consultation ID mismatch, skipping update.");
+              return;
+            }
             set({ curConsultation: res });
           })
           .finally(() => {
             set({ msgLoading: false });
             const currentState = get();
-            if (
-              currentState.isPolling &&
-              currentState.currentConsultationId
-            ) {
+            if (currentState.isPolling && currentState.currentConsultationId) {
               const messageTimerRef = setTimeout(() => {
                 get().loopNewMessage();
               }, 1400);
@@ -256,7 +259,7 @@ export const useChatStore = create<ChatState>()(
         if ("Notification" in window && Notification.permission === "granted") {
           new Notification(title, {
             body,
-            icon: import.meta.env.DEV ? "/logo.png" : '/admin/logo.png',
+            icon: import.meta.env.DEV ? "/logo.png" : "/admin/logo.png",
           });
         }
       },

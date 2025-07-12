@@ -78,7 +78,7 @@ function Chat() {
   useEffect(() => {
     startPolling();
     requestNotificationPermission();
-    
+
     return () => {
       stopPolling();
     };
@@ -127,7 +127,7 @@ function Chat() {
                 </div>
                 <div className="flex justify-between items-center px-3">
                   {/* 超出变... */}
-                  <div className="item-preview-content text-xs font-400 flex w-[80%] pr-3 overflow-hidden text-ellipsis text-clip">
+                  <div className="item-preview-content text-xs font-400 w-[84%] pr-3">
                     {item.lastMessage?.content}
                   </div>
                   {(item.unreadMessageCount || 0) > 0 ? (
