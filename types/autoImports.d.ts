@@ -102,6 +102,7 @@ declare global {
   const string2Dayjs: typeof import('../src/components/Dates/utils/helper')['string2Dayjs']
   const stringRang2DayjsRang: typeof import('../src/components/Dates/utils/helper')['stringRang2DayjsRang']
   const useCallback: typeof import('react')['useCallback']
+  const useChatStore: typeof import('../src/stores/index')['useChatStore']
   const useClipboard: typeof import('../src/hooks/useClipboard')['useClipboard']
   const useCommonStore: typeof import('../src/hooks/useCommonStore')['useCommonStore']
   const useContext: typeof import('react')['useContext']

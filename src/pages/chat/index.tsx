@@ -1,54 +1,35 @@
-import {
-  IPostDoctorGetConsultationPageRes,
-  IPostPatientGetConsultationRes,
-  postDoctorGetConsultation,
-  postDoctorGetConsultationPage,
-  postDoctorReplyMessage,
-} from "@/api";
+import { useMemo, useCallback, useEffect, useState, useRef } from "react";
 import { Button, Input } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import "./index.less";
 import { MessageItem } from "@/components/complex/MessageItem";
-import { useToken } from "@/hooks/useToken";
-import { useEventListener } from "ahooks";
-
-type ConsultationItem =
-  Required<IPostDoctorGetConsultationPageRes>["list"][number];
+import { PatientInfo } from "@/components/complex/PatientInfo";
+import { useChatStore } from "@/stores";
 
 function Chat() {
-  const [list, setList] = useState<ConsultationItem[]>([]);
   const [content, setContent] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [curConsultation, setCurConsultation] =
-    useState<IPostPatientGetConsultationRes>();
-  const [msgLoading, setMsgLoading] = useState(true);
-  const [listLoading, setListLoading] = useState(true);
   const scrollViewRef = useRef<HTMLDivElement>(null);
-  const messageTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const timer = useRef<NodeJS.Timeout | null>(null);
-  const [getToken] = useToken();
-  const cid = useRef<string>("");
-  const [searchValue, setSearchValue] = useState("");
-  const isVisibleRef = useRef(true);
 
-  useEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      isVisibleRef.current = true;
-      if (cid.current) {
-        setMsgLoading(true);
-        loopNewMessage();
-        loopConsultation();
-      }
-    } else if (document.visibilityState === "hidden") {
-      console.log("页面不可见，停止轮询");
-      isVisibleRef.current = false;
-      clearTimeout(messageTimerRef.current!);
-      clearTimeout(timer.current!);
-      setMsgLoading(false);
-      setListLoading(false);
-    }
-  });
+  const {
+    list,
+    curConsultation,
+    msgLoading,
+    listLoading,
+    currentConsultationId,
+    searchValue,
+    setSearchValue,
+    setCurrentConsultationId,
+    setCurConsultation,
+    setMsgLoading,
+    startPolling,
+    stopPolling,
+    loopNewMessage,
+    sendMessage,
+    requestNotificationPermission,
+    initVisibilityListener
+  } = useChatStore();
 
   const msgList = useMemo(() => {
     return curConsultation?.messages || [];
@@ -72,96 +53,51 @@ function Chat() {
     }
   }, []);
 
-  const sendMsg = () => {
+  const handleSendMsg = async () => {
     if (!content) {
       return;
     }
     setSubmitLoading(true);
-    postDoctorReplyMessage({
-      consultationId: curConsultation?.id,
-      content,
-    })
-      .then(() => {
-        setContent("");
-        setCurConsultation((prev) => {
-          if (!prev) {
-            return prev;
-          }
-          return {
-            ...prev,
-            messages: (prev.messages || []).concat({
-              content,
-              createdAt: dayjs().format("YYYY/MM/DD HH:mm:ss"),
-              senderType: "DOCTOR",
-            }),
-          };
-        });
-      })
-      .finally(() => {
-        setSubmitLoading(false);
-      });
+    try {
+      await sendMessage(content.trimEnd());
+      setContent("");
+    } catch (error) {
+      console.error("发送消息失败:", error);
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
-  const loopNewMessage = useCallback(() => {
-    clearTimeout(messageTimerRef.current!);
-    if (!getToken()) {
-      return;
-    }
-    if (cid.current) {
-      postDoctorGetConsultation({
-        consultationId: cid.current!,
-      })
-        .then((res) => {
-          setCurConsultation(res);
-        })
-        .finally(() => {
-          setMsgLoading(false);
+  const handleConsultationClick = (consultationId: string) => {
+    setCurrentConsultationId(consultationId);
+    setMsgLoading(true);
+    setCurConsultation(undefined);
+    loopNewMessage();
+  };
 
-          messageTimerRef.current = setTimeout(() => {
-            loopNewMessage();
-          }, 1400);
-        });
-    }
-  }, [getToken]);
-
-  const loopConsultation = useCallback(() => {
-    if (!getToken()) {
-      clearTimeout(timer.current!);
-      return;
-    }
-    if (!isVisibleRef.current) {
-      clearTimeout(timer.current!);
-      return;
-    }
-    postDoctorGetConsultationPage({
-      pageNo: 1,
-      pageSize: 200,
-    })
-      .then((res) => {
-        setList(res.list || []);
-        if (!cid.current) {
-          cid.current = String(res.list?.[0]?.id || "");
-          loopNewMessage();
-        }
-      })
-      .finally(() => {
-        setListLoading(false);
-        timer.current = setTimeout(() => {
-          loopConsultation();
-        }, 1200);
-      });
-  }, [getToken, loopNewMessage]);
-
+  // 组件挂载时开始轮询并请求通知权限
   useEffect(() => {
-    loopConsultation();
-    return () => {
-      clearTimeout(timer.current!);
-    };
-  }, [loopConsultation, timer]);
+    startPolling();
+    requestNotificationPermission();
 
+    // 初始化页面可见性监听器
+    const handleVisibilityChange = initVisibilityListener();
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    startPolling,
+    stopPolling,
+    requestNotificationPermission,
+    initVisibilityListener,
+  ]);
+
+  // 消息列表变化时滚动到底部
   useEffect(() => {
     scrollToBottom();
-  }, [msgList, scrollToBottom]);
+  }, [msgList.length, scrollToBottom]);
 
   return (
     <div className="flex m-3" style={{ height: "calc(100% - 24px)" }}>
@@ -172,6 +108,7 @@ function Chat() {
         <div className="slider-header pt-3 flex flex-col gap-2 px-4">
           <div className="slider-title">Chat</div>
           <Input
+            value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search ..."
           />
@@ -187,13 +124,8 @@ function Chat() {
             return (
               <div
                 key={item.id}
-                onClick={() => {
-                  cid.current = String(item.id);
-                  setMsgLoading(true);
-                  setCurConsultation(undefined);
-                  loopNewMessage();
-                }}
-                className={`slider-content-item hover:bg-[#EEF4F4]  py-1 rounded-[8px] cursor-pointer ${cid.current === String(item.id) ? "bg-[#EEF4F4]" : ""}`}
+                onClick={() => handleConsultationClick(String(item.id))}
+                className={`slider-content-item hover:bg-[#EEF4F4]  py-1 rounded-[8px] cursor-pointer ${currentConsultationId === String(item.id) ? "bg-[#EEF4F4]" : ""}`}
               >
                 <div className="flex justify-between items-center px-4">
                   <div className="item-title font-bold ">
@@ -208,7 +140,7 @@ function Chat() {
                   <div className="item-preview-content text-xs font-400 flex w-[80%] pr-3 overflow-hidden text-ellipsis text-clip">
                     {item.lastMessage?.content}
                   </div>
-                  {item.unreadMessageCount! > 0 ? (
+                  {(item.unreadMessageCount || 0) > 0 ? (
                     <div className="item-count font-400 bg-[#17828E] w-[20px] h-[20px] leading-[20px] text-center text-xs color-gray-50 rounded-full">
                       {item.unreadMessageCount}
                     </div>
@@ -220,12 +152,14 @@ function Chat() {
         </div>
       </div>
 
-      {cid.current ? (
+      {currentConsultationId ? (
         <div className="flex-1 bg h-full rounded-[8px] ml-3 overflow-hidden relative flex flex-col">
           <div className="chat-header bg-[#EEF4F4] px-3 py-3 card-header">
             <div className="chat-header-title font-bold text-center h-[22px] flex justify-center gap-3">
               {curConsultation?.patientName}
-              {curConsultation ? <PatientInfo patientId={curConsultation?.patientId} /> : null}
+              {curConsultation ? (
+                <PatientInfo patientId={curConsultation?.patientId} />
+              ) : null}
             </div>
           </div>
 
@@ -271,7 +205,7 @@ function Chat() {
               }}
               onKeyUp={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
-                  sendMsg();
+                  handleSendMsg();
                 }
               }}
               disabled={submitLoading}
@@ -282,7 +216,7 @@ function Chat() {
             <Button
               disabled={!content}
               loading={submitLoading}
-              onClick={sendMsg}
+              onClick={handleSendMsg}
               type="primary"
             >
               Send
