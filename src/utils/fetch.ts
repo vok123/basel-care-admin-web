@@ -76,11 +76,23 @@ service.interceptors.response.use(
   },
   (error) => {
     console.error("响应错误:", error);
+
     const status = error.response?.status;
     // 获取错误信息
     const errMsg =
       error.response?.data?.msg || error.message || t("Network error");
-    message.error(errMsg);
+
+    const noMessageUrls = [
+      "doctor/getConsultationPage",
+      "doctor/getConsultation",
+    ];
+    const isNoMessage = noMessageUrls.some((url) =>
+      error.config.url?.includes(url),
+    );
+
+    if (!isNoMessage) {
+      message.error(errMsg);
+    }
 
     if (status === 401 || status === 403) {
       removeLocalInfo(TOKEN);

@@ -27,6 +27,7 @@ interface ChatState {
   currentConsultationId: string;
   searchValue: string;
   isPolling: boolean;
+  unreadMessageTotal: number;
 
   // 定时器引用
   messageTimerRef?: NodeJS.Timeout;
@@ -126,6 +127,12 @@ export const useChatStore = create<ChatState>()(
 
             // 检查是否有新消息并发送通知
             if (currentState.list.length > 0) {
+              const unreadCount = newList.reduce((acc, newItem) => {
+                return acc + (newItem.unreadMessageCount || 0);
+              }, 0);
+
+              set({ unreadMessageTotal: unreadCount });
+
               const hasNewPatientMessage = newList.some((newItem) => {
                 const oldItem = currentState.list.find(
                   (oldItem) => oldItem.id === newItem.id,
@@ -160,6 +167,8 @@ export const useChatStore = create<ChatState>()(
                   );
                 });
               }
+            } else {
+              set({ unreadMessageTotal: 0 });
             }
 
             set({ list: newList });

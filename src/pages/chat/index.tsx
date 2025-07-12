@@ -23,11 +23,8 @@ function Chat() {
     setCurrentConsultationId,
     setCurConsultation,
     setMsgLoading,
-    startPolling,
-    stopPolling,
     loopNewMessage,
     sendMessage,
-    requestNotificationPermission,
   } = useChatStore();
 
   const msgList = useMemo(() => {
@@ -73,16 +70,6 @@ function Chat() {
     setCurConsultation(undefined);
     loopNewMessage();
   };
-
-  // 组件挂载时开始轮询并请求通知权限
-  useEffect(() => {
-    startPolling();
-    requestNotificationPermission();
-
-    return () => {
-      stopPolling();
-    };
-  }, [startPolling, stopPolling, requestNotificationPermission]);
 
   // 消息列表变化时滚动到底部
   useEffect(() => {
@@ -145,7 +132,7 @@ function Chat() {
       {currentConsultationId ? (
         <div className="flex-1 bg h-full rounded-[8px] ml-3 overflow-hidden relative flex flex-col">
           <div className="chat-header bg-[#EEF4F4] px-3 py-3 card-header">
-            <div className="chat-header-title font-bold text-center h-[22px] flex justify-center gap-3">
+            <div className="chat-header-title font-bold text-center h-[22px] flex items-center justify-center gap-4">
               {curConsultation?.patientName}
               {curConsultation ? (
                 <PatientInfo patientId={curConsultation?.patientId} />

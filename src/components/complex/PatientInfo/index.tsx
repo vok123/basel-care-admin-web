@@ -38,11 +38,24 @@ export const PatientInfo = memo<PatientInfoProps>((props) => {
   return (
     <>
       {props.children ? (
-        <div className="cursor-pointer" onClick={handleClick}>{props.children}</div>
+        <div className="cursor-pointer" onClick={handleClick}>
+          {props.children}
+        </div>
       ) : (
-        <InfoCircleOutlined onClick={handleClick} className="cursor-pointer" />
+        <div
+          className="flex items-center gap-1 cursor-pointer"
+          onClick={handleClick}
+        >
+          <InfoCircleOutlined onClick={handleClick} />
+          <span className="text-xs c-gray-5 font-400">Patient Info</span>
+        </div>
       )}
-      <Modal open={open} onCancel={() => setOpen(false)} footer={null}>
+      <Modal
+        width={700}
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+      >
         <Spin spinning={!patientInfo}>
           <Descriptions title="Patient Info" column={2}>
             <Descriptions.Item label="First Name">
@@ -80,7 +93,7 @@ export const PatientInfo = memo<PatientInfoProps>((props) => {
             })}
             {appointments.length === 0 && (
               <Descriptions.Item span={2} className="text-center">
-                No Appointments
+                <span className="c-gray-5 font-400 pl-2">No Appointments</span>
               </Descriptions.Item>
             )}
           </Descriptions>

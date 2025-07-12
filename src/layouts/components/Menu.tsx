@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { useCommonStore } from "@/hooks/useCommonStore";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useMenuStore } from "@/stores";
+import './menu.less';
 import {
   filterMenus,
   getFirstMenu,
@@ -32,6 +33,7 @@ function LayoutMenu(props: Props) {
   const { i18n } = useTranslation();
   const { pathname } = useLocation();
   const [menus, setMenus] = useState<SideMenu[]>([]);
+  const { unreadMessageTotal } = useChatStore();
   // 获取当前语言
   const currentLanguage = i18n.language;
 
@@ -84,6 +86,17 @@ function LayoutMenu(props: Props) {
       setMenus(newMenus || []);
     }
   }, [filterMenuIcon, permissions, currentLanguage, menuList]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      const el = document.querySelector('li[nav="/chat"]');
+      if (unreadMessageTotal > 0) {
+        el?.classList.add("has-unread");
+      } else {
+        el?.classList.remove("has-unread");
+      }
+    }, 300);
+  }, [unreadMessageTotal]);
 
   /**
    * 处理跳转
