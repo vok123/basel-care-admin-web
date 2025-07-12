@@ -27,12 +27,11 @@ interface ChatState {
   currentConsultationId: string;
   searchValue: string;
   isPolling: boolean;
-  isPageVisible: boolean;
-
+  
   // 定时器引用
   messageTimerRef?: NodeJS.Timeout;
   listTimerRef?: NodeJS.Timeout;
-
+  
   // 动作
   setList: (list: ConsultationItem[]) => void;
   setCurConsultation: (consultation?: IPostPatientGetConsultationRes) => void;
@@ -40,21 +39,16 @@ interface ChatState {
   setListLoading: (loading: boolean) => void;
   setCurrentConsultationId: (id: string) => void;
   setSearchValue: (value: string) => void;
-  setPageVisible: (visible: boolean) => void;
-
+  
   // 轮询相关
   startPolling: () => void;
   stopPolling: () => void;
   loopConsultationList: () => void;
   loopNewMessage: () => void;
-
-  // 页面可见性管理
-  initVisibilityListener: () => void;
-  cleanupVisibilityListener: () => void;
-
+  
   // 消息相关
   sendMessage: (content: string) => Promise<void>;
-
+  
   // 通知相关
   showNotification: (title: string, body: string) => void;
   requestNotificationPermission: () => Promise<void>;
@@ -71,7 +65,6 @@ export const useChatStore = create<ChatState>()(
       currentConsultationId: "",
       searchValue: "",
       isPolling: false,
-      isPageVisible: true,
 
       // 基本设置方法
       setList: (list) => set({ list }),
@@ -81,7 +74,6 @@ export const useChatStore = create<ChatState>()(
       setListLoading: (loading) => set({ listLoading: loading }),
       setCurrentConsultationId: (id) => set({ currentConsultationId: id }),
       setSearchValue: (value) => set({ searchValue: value }),
-      setPageVisible: (visible) => set({ isPageVisible: visible }),
 
       // 开始轮询
       startPolling: () => {
@@ -108,32 +100,6 @@ export const useChatStore = create<ChatState>()(
         });
       },
 
-      // 页面可见性管理
-      initVisibilityListener: () => {
-        const handleVisibilityChange = () => {
-          const state = get();
-          if (document.visibilityState === "visible") {
-            state.setPageVisible(true);
-            if (state.currentConsultationId) {
-              state.setMsgLoading(true);
-              state.loopNewMessage();
-              state.loopConsultationList();
-            }
-          } else {
-            state.setPageVisible(false);
-            state.stopPolling();
-          }
-        };
-
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        return handleVisibilityChange;
-      },
-
-      cleanupVisibilityListener: () => {
-        // 这个方法在组件卸载时调用，清理监听器
-        // 实际的清理逻辑应该在调用方保存监听器引用并清理
-      },
-
       // 轮询会话列表
       loopConsultationList: () => {
         const state = get();
@@ -146,7 +112,7 @@ export const useChatStore = create<ChatState>()(
           return;
         }
 
-        if (!state.isPolling || !state.isPageVisible) {
+        if (!state.isPolling) {
           return;
         }
 
@@ -206,7 +172,7 @@ export const useChatStore = create<ChatState>()(
           .finally(() => {
             set({ listLoading: false });
             const currentState = get();
-            if (currentState.isPolling && currentState.isPageVisible) {
+            if (currentState.isPolling) {
               const listTimerRef = setTimeout(() => {
                 get().loopConsultationList();
               }, 1200);
@@ -242,8 +208,7 @@ export const useChatStore = create<ChatState>()(
             const currentState = get();
             if (
               currentState.isPolling &&
-              currentState.currentConsultationId &&
-              currentState.isPageVisible
+              currentState.currentConsultationId
             ) {
               const messageTimerRef = setTimeout(() => {
                 get().loopNewMessage();

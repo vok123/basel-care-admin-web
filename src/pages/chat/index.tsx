@@ -28,7 +28,6 @@ function Chat() {
     loopNewMessage,
     sendMessage,
     requestNotificationPermission,
-    initVisibilityListener
   } = useChatStore();
 
   const msgList = useMemo(() => {
@@ -79,20 +78,11 @@ function Chat() {
   useEffect(() => {
     startPolling();
     requestNotificationPermission();
-
-    // 初始化页面可见性监听器
-    const handleVisibilityChange = initVisibilityListener();
-
+    
     return () => {
       stopPolling();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [
-    startPolling,
-    stopPolling,
-    requestNotificationPermission,
-    initVisibilityListener,
-  ]);
+  }, [startPolling, stopPolling, requestNotificationPermission]);
 
   // 消息列表变化时滚动到底部
   useEffect(() => {
